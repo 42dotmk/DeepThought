@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  deepthought:
+    build: .
+    container_name: deepthought-bot
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - GUILD_ID=${GUILD_ID}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    # Uncomment if you need to expose ports for health checks or webhooks
+    # ports:
+    #   - "3000:3000"
+    
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep node || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

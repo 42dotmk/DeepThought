@@ -4,6 +4,7 @@ import IConfig from "../interfaces/IConfig";
 import Handler from "./Handler";
 import Command from "./Command";
 import SubCommand from "./SubCommand";
+import * as dotenv from "dotenv";
 
 export default class CustomClient extends Client implements ICustomClient {
   handler: Handler;
@@ -21,7 +22,15 @@ export default class CustomClient extends Client implements ICustomClient {
       ],
     });
 
-    this.config = require(`${process.cwd()}/data/config.json`);
+    // Load environment variables
+    dotenv.config();
+
+    this.config = {
+      token: process.env.DISCORD_TOKEN!,
+      discordClientId: process.env.DISCORD_CLIENT_ID!,
+      guildId: process.env.GUILD_ID!,
+      googleApiKey: process.env.GOOGLE_API_KEY!,
+    };
     this.handler = new Handler(this);
     this.commands = new Collection();
     this.Subcommands = new Collection();
