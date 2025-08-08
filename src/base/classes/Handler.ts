@@ -51,10 +51,8 @@ export default class Handler implements IHandler {
 
       if (command instanceof SubCommand) {
         this.client.Subcommands.set(command.name, command);
-        console.log(command);
       } else {
         this.client.commands.set(command.name, command);
-        console.log(command);
       }
 
       delete require.cache[require.resolve(file)];

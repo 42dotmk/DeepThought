@@ -32,7 +32,6 @@ export default class CustomClient extends Client implements ICustomClient {
     try {
       await this.LoadHandlers();
       await this.login(this.config.token);
-      console.log("Test Bot is now ready!");
     } catch (error) {
       console.error(error);
     }

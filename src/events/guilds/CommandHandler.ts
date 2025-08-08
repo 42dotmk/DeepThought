@@ -25,7 +25,6 @@ export default class CommandHandler extends Event {
       interaction.commandName
     );
 
-    console.log(command);
     if (!command) {
       await interaction.reply({
         content: "❌ This command does not exist!",

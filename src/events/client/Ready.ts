@@ -16,7 +16,6 @@ export default class Ready extends Event {
     console.log(`${this.client.user?.tag} is now ready!`);
 
     const commands = this.getJson(this.client.commands);
-    console.log(commands);
 
     const rest = new REST().setToken(this.client.config.token);
 
