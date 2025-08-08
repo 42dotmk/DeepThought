@@ -1,0 +1,32 @@
+# Local development Docker Compose
+# Usage: docker-compose -f docker-compose.local.yml up
+# Make sure to copy .env.example to .env and fill in your values
+
+version: '3.8'
+
+services:
+  deepthought:
+    build: .
+    container_name: deepthought-bot-local
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - GUILD_ID=${GUILD_ID}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    # Uncomment volumes for development with hot reload
+    # volumes:
+    #   - ./src:/app/src:ro
+    #   - ./build:/app/build
+    # Enable for development debugging
+    # ports:
+    #   - "9229:9229"  # Node.js debugging port
+    #   - "3000:3000"  # HTTP endpoints if needed
+    
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep node || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

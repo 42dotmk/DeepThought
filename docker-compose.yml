@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   deepthought:
-    build: .
+    image: ghcr.io/42dotmk/deepthought:latest
     container_name: deepthought-bot
     restart: unless-stopped
     environment:
