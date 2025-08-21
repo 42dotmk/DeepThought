@@ -20,7 +20,7 @@ export default class Ask extends Command {
         {
           name: "question",
           description: "The question you want to ask the AI",
-          type: 3, // STRING type
+          type: 3, 
           required: true,
         },
       ],
@@ -38,7 +38,7 @@ export default class Ask extends Command {
   async Execute(interaction: ChatInputCommandInteraction): Promise<void> {
     const question = interaction.options.getString("question", true);
 
-    await interaction.deferReply(); // defer reply because AI call may take time
+    await interaction.deferReply(); 
 
     try {
       const stream = await this.ollama.chat({
