@@ -34,28 +34,35 @@ export default class Handler implements IHandler {
       return delete require.cache[require.resolve(file)];
     });
   }
-  async LoadCommands() {
-    const files = (await glob(`build/commands/**/*.js`)).map((filePath) =>
-      path.resolve(filePath)
-    );
+async LoadCommands() {
+  const files = (await glob(`build/commands/**/*.js`)).map((filePath) =>
+    path.resolve(filePath)
+  );
 
-    files.map(async (file: string) => {
-      const CommandClass = (await import(file)).default;
-      const command = new CommandClass(this.client);
+  files.map(async (file: string) => {
+    const module = await import(file);
+    const CommandClass = module.default;
 
-      if (!command.name) {
-        delete require.cache[require.resolve(file)];
-        console.log(`${file.split("/").pop()} does not have a name`);
-        return;
-      }
+    if (typeof CommandClass !== "function") {
+      console.log(`${file.split("/").pop()} default export is not a class/function`, CommandClass);
+      return;
+    }
 
-      if (command instanceof SubCommand) {
-        this.client.Subcommands.set(command.name, command);
-      } else {
-        this.client.commands.set(command.name, command);
-      }
+    const command = new CommandClass(this.client);
 
+    if (!command.name) {
       delete require.cache[require.resolve(file)];
-    });
-  }
+      console.log(`${file.split("/").pop()} does not have a name`);
+      return;
+    }
+
+    if (command instanceof SubCommand) {
+      this.client.Subcommands.set(command.name, command);
+    } else {
+      this.client.commands.set(command.name, command);
+    }
+
+    delete require.cache[require.resolve(file)];
+  });
+}
 }

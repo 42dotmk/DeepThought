@@ -14,22 +14,23 @@ export default class CustomClient extends Client implements ICustomClient {
   cooldowns: Collection<string, Collection<string, number>>;
 
   constructor() {
+    dotenv.config(); 
+
     super({
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent, 
       ],
     });
-
-    // Load environment variables
-    dotenv.config();
 
     this.config = {
       token: process.env.DISCORD_TOKEN!,
       discordClientId: process.env.DISCORD_CLIENT_ID!,
       guildId: process.env.GUILD_ID!,
       googleApiKey: process.env.GOOGLE_API_KEY!,
+      ollamaUrl: process.env.OLLAMA_URL!,
     };
     this.handler = new Handler(this);
     this.commands = new Collection();

@@ -15,9 +15,11 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.11.0",
-    "discord.js": "^14.21.0",
+    "discord.js": "^14.22.0",
     "dotenv": "^17.2.1",
-    "glob": "^11.0.3"
+    "glob": "^11.0.3",
+    "ollama": "^0.5.17",
+    "openai": "^5.13.1"
   },
   "description": "A Discord bot for the Base42 hackerspace community that provides calendar integration and server information.",
   "devDependencies": {
