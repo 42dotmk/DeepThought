@@ -3,4 +3,5 @@ export default interface IConfig {
   discordClientId: string;
   guildId: string;
   googleApiKey: string;
+  ollamaUrl: string;
 }
