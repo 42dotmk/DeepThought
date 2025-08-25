@@ -12,7 +12,7 @@ import { CALENDAR_ID } from "../base/constants/Calendar";
 export default class PastEvents extends Command {
   constructor(client: CustomClient) {
     super(client, {
-      name: "pastevents15",
+      name: "pastevents",
       description: "Shows events from the past 15 days",
       category: Category.Utilities,
       options: [],
