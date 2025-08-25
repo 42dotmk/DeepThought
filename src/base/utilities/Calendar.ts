@@ -10,12 +10,14 @@ export function formatEventsTable(events: any[], title: string) {
   return `${title}\n${lines.join("\n")}`;
 }
 
-export function getCountdown(date: Date) {
+export function getCountdown(date: Date): string {
   const diff = date.getTime() - Date.now();
   if (diff <= 0) return "⏳ Event ended";
+
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(hours / 24);
   const remainingHours = hours % 24;
+
   return days > 0
     ? `⏳ Starts in ${days}d ${remainingHours}h`
     : `⏳ Starts in ${remainingHours}h`;
