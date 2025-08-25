@@ -1,22 +1,14 @@
-import { ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  PermissionsBitField,
+  EmbedBuilder,
+} from "discord.js";
 import Command from "../base/classes/Command";
 import CustomClient from "../base/classes/CustomClient";
 import Category from "../base/enums/Category";
 import axios from "axios";
 import { CALENDAR_ID } from "../base/constants/Calendar";
-
-function getCountdown(date: Date): string {
-  const diff = date.getTime() - Date.now();
-  if (diff <= 0) return "⏳ Event ended";
-
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(hours / 24);
-  const remainingHours = hours % 24;
-
-  return days > 0
-    ? `⏳ Starts in ${days}d ${remainingHours}h`
-    : `⏳ Starts in ${remainingHours}h`;
-}
+import { getCountdown } from "../base/utilities/Calendar";
 
 export default class MonthlyEvents extends Command {
   constructor(client: CustomClient) {
@@ -25,7 +17,8 @@ export default class MonthlyEvents extends Command {
       description: "Shows events for the next 30 days",
       category: Category.Utilities,
       options: [],
-      default_member_permissions: PermissionsBitField.Flags.UseApplicationCommands,
+      default_member_permissions:
+        PermissionsBitField.Flags.UseApplicationCommands,
       dm_permission: false,
       cooldown: 3,
     });
@@ -86,8 +79,11 @@ export default class MonthlyEvents extends Command {
 
       const embed = new EmbedBuilder()
         .setTitle("📅 Monthly Events (Next 30 Days)")
-        .setDescription(eventBlocks.join("\n") + "\n\n🌐 Book an event 👉 https://base42.mk/events")
-        .setColor("#2b2d31") 
+        .setDescription(
+          eventBlocks.join("\n") +
+            "\n\n🌐 Book an event 👉 https://base42.mk/events"
+        )
+        .setColor("#2b2d31")
         .setFooter({ text: "Google Calendar Events" })
         .setTimestamp();
 

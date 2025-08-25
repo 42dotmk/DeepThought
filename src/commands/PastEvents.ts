@@ -1,18 +1,23 @@
-import { ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  PermissionsBitField,
+  EmbedBuilder,
+} from "discord.js";
 import Command from "../base/classes/Command";
 import CustomClient from "../base/classes/CustomClient";
 import Category from "../base/enums/Category";
 import axios from "axios";
 import { CALENDAR_ID } from "../base/constants/Calendar";
 
-export default class PastEvents15 extends Command {
+export default class PastEvents extends Command {
   constructor(client: CustomClient) {
     super(client, {
       name: "pastevents15",
       description: "Shows events from the past 15 days",
       category: Category.Utilities,
       options: [],
-      default_member_permissions: PermissionsBitField.Flags.UseApplicationCommands,
+      default_member_permissions:
+        PermissionsBitField.Flags.UseApplicationCommands,
       dm_permission: false,
       cooldown: 3,
     });
@@ -72,7 +77,10 @@ export default class PastEvents15 extends Command {
 
       const embed = new EmbedBuilder()
         .setTitle("📅 Past Events (Last 15 Days)")
-        .setDescription(eventBlocks.join("\n") + "\n\n🌐 Book an event 👉 https://base42.mk/events")
+        .setDescription(
+          eventBlocks.join("\n") +
+            "\n\n🌐 Book an event 👉 https://base42.mk/events"
+        )
         .setColor("#2b2d31")
         .setFooter({ text: "Google Calendar Events" })
         .setTimestamp();
