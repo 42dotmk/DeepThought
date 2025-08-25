@@ -1,10 +1,22 @@
-import { ChatInputCommandInteraction, PermissionsBitField } from "discord.js";
+import { ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder } from "discord.js";
 import Command from "../base/classes/Command";
 import CustomClient from "../base/classes/CustomClient";
 import Category from "../base/enums/Category";
 import axios from "axios";
 import { CALENDAR_ID } from "../base/constants/Calendar";
-import { formatEventsTable, getCountdown } from "../base/utilities/Calendar";
+
+function getCountdown(date: Date): string {
+  const diff = date.getTime() - Date.now();
+  if (diff <= 0) return "⏳ Event ended";
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+
+  return days > 0
+    ? `⏳ Starts in ${days}d ${remainingHours}h`
+    : `⏳ Starts in ${remainingHours}h`;
+}
 
 export default class MonthlyEvents extends Command {
   constructor(client: CustomClient) {
@@ -13,16 +25,15 @@ export default class MonthlyEvents extends Command {
       description: "Shows events for the next 30 days",
       category: Category.Utilities,
       options: [],
-      default_member_permissions:
-        PermissionsBitField.Flags.UseApplicationCommands,
+      default_member_permissions: PermissionsBitField.Flags.UseApplicationCommands,
       dm_permission: false,
       cooldown: 3,
     });
   }
 
   async Execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    const now = new Date();
     const apiKey = this.client.config.googleApiKey;
+    const now = new Date();
 
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 30);
@@ -33,50 +44,62 @@ export default class MonthlyEvents extends Command {
 
     try {
       const res = await axios.get(url);
-      const events = res.data.items || [];
+      const events = res.data.items ?? [];
 
       if (events.length === 0) {
         await interaction.reply({
-          content: "No events found in the next 30 days.",
+          content: "📭 No events found in the next 30 days.",
           ephemeral: true,
         });
         return;
       }
 
-      const formattedEvents = events.map((event: any) => {
+      const eventBlocks = events.map((event: any) => {
         const start = event.start?.dateTime || event.start?.date;
         const dateObj = start ? new Date(start) : null;
 
-        return {
-          title: event.summary?.trim() || "(No Title)",
-          date:
-            dateObj?.toLocaleDateString("en-US", {
+        const title = event.summary?.trim() || "(No Title)";
+        const date = dateObj
+          ? dateObj.toLocaleDateString("en-US", {
               weekday: "short",
               month: "short",
               day: "numeric",
-            }) || "Unknown date",
-          time:
-            dateObj?.toLocaleTimeString("en-US", {
+            })
+          : "Unknown date";
+        const time = dateObj
+          ? dateObj.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
-            }) || "Unknown time",
-          countdown: dateObj ? getCountdown(dateObj) : "",
-        };
+            })
+          : "Unknown time";
+        const countdown = dateObj ? getCountdown(dateObj) : "";
+
+        return (
+          "```" +
+          `📌 ${title}\n` +
+          `📅 ${date}\n` +
+          `⏰ ${time}\n` +
+          `${countdown}` +
+          "```"
+        );
       });
 
-      const table = formatEventsTable(
-        formattedEvents,
-        "📅 Monthly Events (Next 30 Days)"
-      );
+      const embed = new EmbedBuilder()
+        .setTitle("📅 Monthly Events (Next 30 Days)")
+        .setDescription(eventBlocks.join("\n") + "\n\n🌐 Book an event 👉 https://base42.mk/events")
+        .setColor("#2b2d31") 
+        .setFooter({ text: "Google Calendar Events" })
+        .setTimestamp();
 
       await interaction.reply({
-        content: table,
+        embeds: [embed],
         ephemeral: true,
       });
-    } catch (err) {
-      console.error("❌ Error fetching monthly events:", err);
+    } catch (err: any) {
+      console.error("❌ Error fetching monthly events:", err.message || err);
+
       await interaction.reply({
-        content: "Failed to fetch monthly events.",
+        content: "⚠️ Failed to fetch monthly events. Please try again later.",
         ephemeral: true,
       });
     }
