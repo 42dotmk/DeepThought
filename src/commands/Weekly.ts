@@ -1,14 +1,21 @@
-import {
-  ChatInputCommandInteraction,
-  PermissionsBitField,
-  EmbedBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, PermissionsBitField } from "discord.js";
 import Command from "../base/classes/Command";
 import CustomClient from "../base/classes/CustomClient";
 import Category from "../base/enums/Category";
 import axios from "axios";
 import { CALENDAR_ID } from "../base/constants/Calendar";
-import { getCountdown } from "../base/utilities/Calendar";
+import { formatEventsTable } from "../base/utilities/Calendar";
+
+function getCountdown(date: Date) {
+  const diff = date.getTime() - Date.now();
+  if (diff <= 0) return "⏳ Event ended";
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  return days > 0
+    ? ` ⏳ Starts in ${days}d ${remainingHours}h`
+    : ` ⏳ Starts in ${remainingHours}h`;
+}
 
 export default class WeeklyEvents extends Command {
   constructor(client: CustomClient) {
@@ -25,8 +32,8 @@ export default class WeeklyEvents extends Command {
   }
 
   async Execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    const apiKey = this.client.config.googleApiKey;
     const now = new Date();
+    const apiKey = this.client.config.googleApiKey;
 
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 7);
@@ -37,65 +44,50 @@ export default class WeeklyEvents extends Command {
 
     try {
       const res = await axios.get(url);
-      const events = res.data.items ?? [];
+      const events = res.data.items || [];
 
       if (events.length === 0) {
         await interaction.reply({
-          content: "📭 No events found in the next 7 days.",
+          content: "No events found in the next 7 days.",
           ephemeral: true,
         });
         return;
       }
 
-      const eventBlocks = events.map((event: any) => {
+      const formattedEvents = events.map((event: any) => {
         const start = event.start?.dateTime || event.start?.date;
         const dateObj = start ? new Date(start) : null;
 
-        const title = event.summary?.trim() || "(No Title)";
-        const date = dateObj
-          ? dateObj.toLocaleDateString("en-US", {
+        return {
+          title: event.summary?.trim() || "(No Title)",
+          date:
+            dateObj?.toLocaleDateString("en-US", {
               weekday: "short",
               month: "short",
               day: "numeric",
-            })
-          : "Unknown date";
-        const time = dateObj
-          ? dateObj.toLocaleTimeString("en-US", {
+            }) || "Unknown date",
+          time:
+            dateObj?.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
-            })
-          : "Unknown time";
-        const countdown = dateObj ? getCountdown(dateObj) : "";
-
-        return (
-          "```" +
-          `📌 ${title}\n` +
-          `📅 ${date}\n` +
-          `⏰ ${time}\n` +
-          `${countdown}` +
-          "```"
-        );
+            }) || "Unknown time",
+          countdown: dateObj ? getCountdown(dateObj) : "",
+        };
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle("📅 Weekly Events (Next 7 Days)")
-        .setDescription(
-          eventBlocks.join("\n") +
-            "\n\n🌐 Book an event 👉 https://base42.mk/events"
-        )
-        .setColor("#2b2d31")
-        .setFooter({ text: "Google Calendar Events" })
-        .setTimestamp();
+      const table = formatEventsTable(
+        formattedEvents,
+        " 📅 Weekly Events (Next 7 Days)"
+      );
 
       await interaction.reply({
-        embeds: [embed],
+        content: table,
         ephemeral: true,
       });
-    } catch (err: any) {
-      console.error("❌ Error fetching weekly events:", err.message || err);
-
+    } catch (err) {
+      console.error("❌ Error fetching weekly events:", err);
       await interaction.reply({
-        content: "⚠️ Failed to fetch weekly events. Please try again later.",
+        content: "Failed to fetch weekly events.",
         ephemeral: true,
       });
     }
